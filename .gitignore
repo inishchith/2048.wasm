@@ -1,3 +1,8 @@
+# libs and includes
+src/include/*
+src/lib/*
+
+
 # Prerequisites
 *.d
 
