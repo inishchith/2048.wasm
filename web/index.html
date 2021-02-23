@@ -10,6 +10,17 @@
 </style>
 
 <body>
+    <h1> HELLO WORLD</h1>
+
+    <!-- <canvas id="canvas" oncontextmenu="event.preventDefault()"> </canvas> -->
+    <canvas id="canvas" > </canvas>
+
+    <script type="text/javascript">
+        var Module = {
+            canvas: (function() { return document.getElementById('canvas');})()
+        }
+    </script>
+    <script async type="text/javascript" src="2048.js"></script>
 
 </body>
 </html>

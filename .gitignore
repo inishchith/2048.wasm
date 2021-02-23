@@ -1,6 +1,10 @@
 # libs and includes
 src/include/*
 src/lib/*
+src/play
+
+# web
+web/2048.*
 
 
 # Prerequisites

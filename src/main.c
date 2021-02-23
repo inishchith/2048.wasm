@@ -5,18 +5,29 @@
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_ttf.h>
 
+#ifdef __EMSCRIPTEN__
+
+#include<emscripten.h>
+
+#endif
+
 #define GRID_SIZE 4
 #define CELL_SIZE 80
 
 bool init();
 void begin();
 bool loop();
-void kill();
+void display_board();
+void kill_resources();
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+SDL_Surface* surface;
+SDL_Texture* texture;
 
 int window_side = (GRID_SIZE * CELL_SIZE) + 1;
+TTF_Font* font;
+int INIT_DISPLAY = true;
 
 // Dark Theme
 SDL_Color grid_background = {22, 22, 22, 255};
@@ -24,9 +35,7 @@ SDL_Color grid_line_color = {44, 44, 44, 255};
 SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
 SDL_Color grid_cursor_color = {255, 255, 255, 255};
 
-struct game {
-    int tiles[GRID_SIZE][GRID_SIZE];
-};
+int game[GRID_SIZE][GRID_SIZE];
 
 
 // Light Theme
@@ -36,17 +45,32 @@ struct game {
 // SDL_Color grid_cursor_color = {160, 160, 160, 255}; // Grey
 
 
+#ifdef __EMSCRIPTEN__
+
+void mainloop() {
+    loop();
+}
+
+#endif
+
+
 int main() {
     if (!init()) return 1;
 
-    struct game g;
-    begin(&g);
+    memset(game, 0, sizeof(int) * GRID_SIZE * GRID_SIZE);
 
-    while (loop (&g)) {
-        SDL_Delay(10);
+    begin();
+    font = TTF_OpenFont("/Users/Nishchith/Projects/GitHub/2048.c/src/OpenSans-Bold.ttf", 24);
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(mainloop, 0, );
+#else
+    while (loop (game)) {
+        // SDL_Delay(10);
     }
+#endif
 
-    kill();
+    kill_resources();
     return 0;
 }
 
@@ -70,17 +94,15 @@ bool init() {
     return true;
 }
 
-void display_board(struct game* g) {
+void display_board() {
     for(int i = 0; i < GRID_SIZE; ++i) {
         for(int j = 0; j < GRID_SIZE; ++j) {
             char snum[6];
-            sprintf(snum, "%d", g->tiles[i][j]);
-            // itoa(, snum, 10)
+            sprintf(snum, "%d", game[i][j]);
 
-            TTF_Font* font = TTF_OpenFont("/Users/Nishchith/Projects/GitHub/2048.c/src/OpenSans-Bold.ttf", 24);
             SDL_Color White = {255, 255, 255};
-            SDL_Surface* surfaceMessage = TTF_RenderText_Solid(font, snum, White);
-            SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+            surface = TTF_RenderText_Solid(font, snum, White);
+            texture = SDL_CreateTextureFromSurface(renderer, surface);
 
             SDL_Rect Message_rect = {
                 .x = j*CELL_SIZE + 20,
@@ -89,9 +111,10 @@ void display_board(struct game* g) {
                 .h = CELL_SIZE / 2,
             };
 
-            SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+            SDL_RenderCopy(renderer, texture, NULL, &Message_rect);
 
-            SDL_FreeSurface(surfaceMessage);
+            SDL_DestroyTexture(texture);
+            SDL_FreeSurface(surface);
         }
     }
 }
@@ -104,40 +127,39 @@ int random_value() {
     return 2;
 }
 
-void begin(struct game* g) {
-    struct game g2 = {};
+void begin() {
+    memset(game, 0, sizeof(int) * GRID_SIZE * GRID_SIZE);
 
-    *g = g2;
-    g->tiles[random_cord()][random_cord()] = random_value();
-    g->tiles[random_cord()][random_cord()] = random_value();
+    game[random_cord()][random_cord()] = random_value();
+    game[random_cord()][random_cord()] = random_value();
 }
 
-void add_value(struct game *g) {
+void add_value() {
     int i, j;
     while (1) {
         i = random_cord();
         j = random_cord();
 
-        if(!g->tiles[i][j]) {
-            g->tiles[i][j] = random_value();
+        if(!game[i][j]) {
+            game[i][j] = random_value();
             return;
         }
     }
 }
 
-void fall(struct game* g) {
+void fall() {
 
-    struct game g2 = {};
+    int g2[GRID_SIZE][GRID_SIZE] = {{0}};
     int i, j, k, temp;
 
     // migrate zeros from front
     for (i = 0; i < GRID_SIZE; i++) {
         for (j = GRID_SIZE-1; j >=0; j--){
             for (k = j-1; k >=0; k--){
-                if (g->tiles[j][i] == 0 && g->tiles[k][i] != 0) {
-                    temp = g->tiles[k][i];
-                    g->tiles[k][i] = g->tiles[j][i];
-                    g->tiles[j][i] = temp;
+                if (game[j][i] == 0 && game[k][i] != 0) {
+                    temp = game[k][i];
+                    game[k][i] = game[j][i];
+                    game[j][i] = temp;
                     break;
                 }
             }
@@ -147,78 +169,82 @@ void fall(struct game* g) {
     for (i = GRID_SIZE - 2; i >= 0; i--) {
         for (j = 0; j < GRID_SIZE; j++) {
             if (i==GRID_SIZE-2)
-                g2.tiles[i+1][j] = g->tiles[i+1][j];
+                g2[i+1][j] = game[i+1][j];
 
-            if (g->tiles[i][j] == g->tiles[i+1][j]) {
-                g2.tiles[i+1][j] = g->tiles[i][j] * 2;
-                g->tiles[i][j] = 0;
+            if (game[i][j] == game[i+1][j]) {
+                g2[i+1][j] = game[i][j] * 2;
+                game[i][j] = 0;
             }
-            else if (g->tiles[i+1][j] == 0) {
-                g2.tiles[i+1][j] = g->tiles[i][j];
-                g->tiles[i][j] = 0;
+            else if (game[i+1][j] == 0) {
+                g2[i+1][j] = game[i][j];
+                game[i][j] = 0;
             } else {
-                g2.tiles[i][j] = g->tiles[i][j];
+                g2[i][j] = game[i][j];
             }
         }
     }
 
-    *g = g2;
+    memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
+    // free(&g2);
 
     // migrate zeros from front
     for (i = 0; i < GRID_SIZE; i++) {
         for (j = GRID_SIZE-1; j >=0; j--){
             for (k = j-1; k >=0; k--){
-                if (g->tiles[j][i] == 0 && g->tiles[k][i] != 0) {
-                    temp = g->tiles[k][i];
-                    g->tiles[k][i] = g->tiles[j][i];
-                    g->tiles[j][i] = temp;
+                if (game[j][i] == 0 && game[k][i] != 0) {
+                    temp = game[k][i];
+                    game[k][i] = game[j][i];
+                    game[j][i] = temp;
                     break;
                 }
             }
         }
     }
 
-    add_value(g);
-
+    add_value();
 }
 
-void upside_down(struct game* g) {
+void upside_down() {
     int temp;
     for(int i = 0; i < GRID_SIZE / 2; i++) {
         for(int j = 0; j < GRID_SIZE; j++) {
-            temp = g->tiles[i][j];
-            g->tiles[i][j] = g->tiles[GRID_SIZE-i-1][j];
-            g->tiles[GRID_SIZE-i-1][j] = temp;
+            temp = game[i][j];
+            game[i][j] = game[GRID_SIZE-i-1][j];
+            game[GRID_SIZE-i-1][j] = temp;
         }
     }
 }
 
-void rotate_right(struct game* g) {
+void rotate_right() {
     int temp;
-    struct game g2 = {};
+    int g2[GRID_SIZE][GRID_SIZE] = {{0}};
+
     for(int i = 0; i < GRID_SIZE; i++) {
         for(int j = 0; j < GRID_SIZE; j++) {
-            g2.tiles[GRID_SIZE-1-j][i] = g->tiles[i][j];
+            g2[GRID_SIZE-1-j][i] = game[i][j];
         }
     }
-    *g = g2;
+
+    memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
+    // free(g2);
 }
 
-void rotate_left(struct game *g) {
-    struct game g2 = {};
+void rotate_left() {
+    int g2[GRID_SIZE][GRID_SIZE] = {{0}};
+
     for(int i = 0; i < GRID_SIZE; i++) { 
         for(int j = 0; j < GRID_SIZE; j++) { 
-            g2.tiles[i][j] = g->tiles[GRID_SIZE-1-j][i];
+            g2[i][j] = game[GRID_SIZE-1-j][i];
         }
     }
 
-    *g = g2;
+    memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
+    // free(g2);
 }
 
 
-bool loop(struct game* g) {
+bool loop() {
     SDL_Event event;
-    struct game g2;
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -226,25 +252,25 @@ bool loop(struct game* g) {
                 switch (event.key.keysym.sym) {
                     case SDLK_w:
                     case SDLK_UP:
-                        upside_down(g);
-                        fall(g);
-                        upside_down(g);
+                        upside_down();
+                        fall();
+                        upside_down();
                         break;
                     case SDLK_s:
                     case SDLK_DOWN:
-                        fall(g);
+                        fall();
                         break;
                     case SDLK_a:
                     case SDLK_LEFT:
-                        rotate_right(g);
-                        fall(g);
-                        rotate_left(g);
+                        rotate_right();
+                        fall();
+                        rotate_left();
                         break;
                     case SDLK_d:
                     case SDLK_RIGHT:
-                        rotate_left(g);
-                        fall(g);
-                        rotate_right(g);
+                        rotate_left();
+                        fall();
+                        rotate_right();
                         break;
                 }
                 break;
@@ -271,17 +297,17 @@ bool loop(struct game* g) {
         SDL_RenderDrawLine(renderer, 0, y, window_side, y);
     }
 
-    display_board(g);
-
+    display_board();
     SDL_RenderPresent(renderer);
 
     return true;
 }
 
-void kill() {
+void kill_resources() {
     /* Free resources and Quit */
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
 }
