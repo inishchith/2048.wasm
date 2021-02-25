@@ -63,10 +63,10 @@ int main() {
     font = TTF_OpenFont("/Users/Nishchith/Projects/GitHub/2048.c/src/OpenSans-Bold.ttf", 24);
 
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(mainloop, 0, );
+    emscripten_set_main_loop(mainloop, 0, 1);
 #else
     while (loop (game)) {
-        // SDL_Delay(10);
+        SDL_Delay(10);
     }
 #endif
 
@@ -97,7 +97,7 @@ bool init() {
 void display_board() {
     for(int i = 0; i < GRID_SIZE; ++i) {
         for(int j = 0; j < GRID_SIZE; ++j) {
-            char snum[6];
+            char *snum = calloc(6, sizeof(char));
             sprintf(snum, "%d", game[i][j]);
 
             SDL_Color White = {255, 255, 255};
@@ -115,6 +115,7 @@ void display_board() {
 
             SDL_DestroyTexture(texture);
             SDL_FreeSurface(surface);
+            free(snum);
         }
     }
 }
@@ -148,9 +149,8 @@ void add_value() {
 }
 
 void fall() {
-
-    int g2[GRID_SIZE][GRID_SIZE] = {{0}};
     int i, j, k, temp;
+    int (*g2)[GRID_SIZE] = calloc(GRID_SIZE, GRID_SIZE * sizeof(int));
 
     // migrate zeros from front
     for (i = 0; i < GRID_SIZE; i++) {
@@ -185,7 +185,7 @@ void fall() {
     }
 
     memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
-    // free(&g2);
+    free(g2);
 
     // migrate zeros from front
     for (i = 0; i < GRID_SIZE; i++) {
@@ -217,7 +217,7 @@ void upside_down() {
 
 void rotate_right() {
     int temp;
-    int g2[GRID_SIZE][GRID_SIZE] = {{0}};
+    int (*g2)[GRID_SIZE] = calloc(GRID_SIZE, GRID_SIZE * sizeof(int));
 
     for(int i = 0; i < GRID_SIZE; i++) {
         for(int j = 0; j < GRID_SIZE; j++) {
@@ -226,11 +226,11 @@ void rotate_right() {
     }
 
     memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
-    // free(g2);
+    free(g2);
 }
 
 void rotate_left() {
-    int g2[GRID_SIZE][GRID_SIZE] = {{0}};
+    int (*g2)[GRID_SIZE] = calloc(GRID_SIZE, GRID_SIZE * sizeof(int));
 
     for(int i = 0; i < GRID_SIZE; i++) { 
         for(int j = 0; j < GRID_SIZE; j++) { 
@@ -239,7 +239,7 @@ void rotate_left() {
     }
 
     memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
-    // free(g2);
+    free(g2);
 }
 
 
@@ -281,8 +281,6 @@ bool loop() {
                 break;
         }
     }
-
-    // Add random 2
 
     SDL_SetRenderDrawColor(renderer, grid_background.r, grid_background.g, grid_background.b, grid_background.a);
     SDL_RenderClear(renderer);
