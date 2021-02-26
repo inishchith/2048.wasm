@@ -30,6 +30,7 @@ TTF_Font* font;
 int INIT_DISPLAY = true;
 
 // Dark Theme
+// SDL_Color grid_background = {119, 110, 101, 0};
 SDL_Color grid_background = {22, 22, 22, 255};
 SDL_Color grid_line_color = {44, 44, 44, 255};
 SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
@@ -60,13 +61,13 @@ int main() {
     memset(game, 0, sizeof(int) * GRID_SIZE * GRID_SIZE);
 
     begin();
-    font = TTF_OpenFont("/Users/Nishchith/Projects/GitHub/2048.c/src/OpenSans-Bold.ttf", 24);
+    font = TTF_OpenFont("OpenSans-Bold.ttf", 20);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(mainloop, 0, 1);
 #else
     while (loop (game)) {
-        SDL_Delay(10);
+        // SDL_Delay(10);
     }
 #endif
 
@@ -95,13 +96,17 @@ bool init() {
 }
 
 void display_board() {
+    if (font == NULL) {
+        printf("Failed to load font!\n");
+    }
+
     for(int i = 0; i < GRID_SIZE; ++i) {
         for(int j = 0; j < GRID_SIZE; ++j) {
             char *snum = calloc(6, sizeof(char));
             sprintf(snum, "%d", game[i][j]);
 
-            SDL_Color White = {255, 255, 255};
-            surface = TTF_RenderText_Solid(font, snum, White);
+            SDL_Color Font_Color = {255, 255, 255};
+            surface = TTF_RenderText_Blended(font, snum, Font_Color);
             texture = SDL_CreateTextureFromSurface(renderer, surface);
 
             SDL_Rect Message_rect = {
@@ -136,8 +141,8 @@ void begin() {
 }
 
 void add_value() {
-    int i, j;
-    while (1) {
+    int i, j, c=15;
+    while (c) {
         i = random_cord();
         j = random_cord();
 
@@ -145,7 +150,9 @@ void add_value() {
             game[i][j] = random_value();
             return;
         }
+        c--;
     }
+    exit(0);
 }
 
 void fall() {
@@ -246,28 +253,32 @@ void rotate_left() {
 bool loop() {
     SDL_Event event;
 
-    while (SDL_PollEvent(&event)) {
+    if (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym) {
                     case SDLK_w:
                     case SDLK_UP:
                         upside_down();
+                        printf("UP \n");
                         fall();
                         upside_down();
                         break;
                     case SDLK_s:
                     case SDLK_DOWN:
+                        printf("DOWN \n");
                         fall();
                         break;
                     case SDLK_a:
                     case SDLK_LEFT:
+                        printf("LEFT \n");
                         rotate_right();
                         fall();
                         rotate_left();
                         break;
                     case SDLK_d:
                     case SDLK_RIGHT:
+                        printf("RIGHT \n");
                         rotate_left();
                         fall();
                         rotate_right();
