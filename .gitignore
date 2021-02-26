@@ -4,7 +4,8 @@ src/lib/*
 src/play
 
 # web
-web/2048.*
+web/server.py
+# web/2048.*
 
 
 # Prerequisites
