@@ -12,7 +12,7 @@
 #endif
 
 #define GRID_SIZE 4
-#define CELL_SIZE 80
+#define CELL_SIZE 120
 
 bool init();
 void begin();
@@ -31,7 +31,8 @@ int INIT_DISPLAY = true;
 
 // Dark Theme
 // SDL_Color grid_background = {119, 110, 101, 0};
-SDL_Color grid_background = {22, 22, 22, 255};
+// SDL_Color grid_background = {22, 22, 22, 255};
+SDL_Color grid_background = {30, 100, 119, 255};
 SDL_Color grid_line_color = {44, 44, 44, 255};
 SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
 SDL_Color grid_cursor_color = {255, 255, 255, 255};
@@ -58,16 +59,14 @@ void mainloop() {
 int main() {
     if (!init()) return 1;
 
-    memset(game, 0, sizeof(int) * GRID_SIZE * GRID_SIZE);
-
     begin();
-    font = TTF_OpenFont("OpenSans-Bold.ttf", 20);
+    font = TTF_OpenFont("OpenSans-Bold.ttf", 24);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(mainloop, 0, 1);
 #else
     while (loop (game)) {
-        // SDL_Delay(10);
+        SDL_Delay(10);
     }
 #endif
 
@@ -100,18 +99,41 @@ void display_board() {
         printf("Failed to load font!\n");
     }
 
-    for(int i = 0; i < GRID_SIZE; ++i) {
-        for(int j = 0; j < GRID_SIZE; ++j) {
+    // find Max Index
+    int _max = game[0][0], i, j;
+
+    for(i = 0; i < GRID_SIZE; ++i) {
+        for(j = 0; j < GRID_SIZE; ++j) {
+            if (_max < game[i][j]) {
+                _max = game[i][j];
+            }
+        }
+    }
+
+    for(i = 0; i < GRID_SIZE; ++i) {
+        for(j = 0; j < GRID_SIZE; ++j) {
             char *snum = calloc(6, sizeof(char));
             sprintf(snum, "%d", game[i][j]);
 
-            SDL_Color Font_Color = {255, 255, 255};
+            SDL_Color Font_Color;
+
+            if (game[i][j] == _max) {
+                Font_Color.r = 0;
+                Font_Color.g = 255;
+                Font_Color.b = 255;
+            }
+            else {
+                Font_Color.r = 10;
+                Font_Color.g = 60;
+                Font_Color.b = 80;
+            }
+
             surface = TTF_RenderText_Blended(font, snum, Font_Color);
             texture = SDL_CreateTextureFromSurface(renderer, surface);
 
             SDL_Rect Message_rect = {
-                .x = j*CELL_SIZE + 20,
-                .y = i*CELL_SIZE + 20,
+                .x = j*CELL_SIZE + 30,
+                .y = i*CELL_SIZE + 30,
                 .w = CELL_SIZE / 2,
                 .h = CELL_SIZE / 2,
             };
@@ -260,33 +282,30 @@ bool loop() {
                     case SDLK_w:
                     case SDLK_UP:
                         upside_down();
-                        printf("UP \n");
                         fall();
                         upside_down();
                         break;
                     case SDLK_s:
                     case SDLK_DOWN:
-                        printf("DOWN \n");
                         fall();
                         break;
                     case SDLK_a:
                     case SDLK_LEFT:
-                        printf("LEFT \n");
                         rotate_right();
                         fall();
                         rotate_left();
                         break;
                     case SDLK_d:
                     case SDLK_RIGHT:
-                        printf("RIGHT \n");
                         rotate_left();
                         fall();
                         rotate_right();
                         break;
+                    case SDLK_n:
+                        begin();
+                        break;
                 }
                 break;
-            // ADD NEW GAME
-            // begin(&g);
             case SDL_QUIT:
                 return false;
                 break;
