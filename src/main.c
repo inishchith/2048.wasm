@@ -123,9 +123,9 @@ void display_board() {
                 Font_Color.b = 255;
             }
             else {
-                Font_Color.r = 10;
-                Font_Color.g = 60;
-                Font_Color.b = 80;
+                Font_Color.r = 255;
+                Font_Color.g = 255;
+                Font_Color.b = 255;
             }
 
             surface = TTF_RenderText_Blended(font, snum, Font_Color);
