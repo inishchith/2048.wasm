@@ -29,22 +29,13 @@ int window_side = (GRID_SIZE * CELL_SIZE) + 1;
 TTF_Font* font;
 int INIT_DISPLAY = true;
 
-// Dark Theme
-// SDL_Color grid_background = {119, 110, 101, 0};
-// SDL_Color grid_background = {22, 22, 22, 255};
+
 SDL_Color grid_background = {30, 100, 119, 255};
 SDL_Color grid_line_color = {15, 50, 60, 255};
-SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
+SDL_Color grid_cursor_ghost_color = {15, 50, 60, 255};
 SDL_Color grid_cursor_color = {255, 255, 255, 255};
 
 int game[GRID_SIZE][GRID_SIZE];
-
-
-// Light Theme
-// SDL_Color grid_background = {233, 233, 233, 255}; // Barely white
-// SDL_Color grid_line_color = {200, 200, 200, 255}; // Very light grey
-// SDL_Color grid_cursor_ghost_color = {200, 200, 200, 255};
-// SDL_Color grid_cursor_color = {160, 160, 160, 255}; // Grey
 
 
 #ifdef __EMSCRIPTEN__
@@ -66,7 +57,7 @@ int main() {
     emscripten_set_main_loop(mainloop, 0, 1);
 #else
     while (loop (game)) {
-        SDL_Delay(10);
+        SDL_Delay(100);
     }
 #endif
 
@@ -100,12 +91,14 @@ void display_board() {
     }
 
     // find Max Index
-    int _max = game[0][0], i, j;
+    int _max_i = 0, _max_j = 0, _max = game[0][0], i, j;
 
     for(i = 0; i < GRID_SIZE; ++i) {
         for(j = 0; j < GRID_SIZE; ++j) {
             if (_max < game[i][j]) {
                 _max = game[i][j];
+                _max_i = i;
+                _max_j = j;
             }
         }
     }
@@ -119,10 +112,21 @@ void display_board() {
 
             SDL_Color Font_Color;
 
-            if (game[i][j] == _max) {
+            if (i == _max_i && j == _max_j) {
+                SDL_Rect grid_cursor_ghost = {
+                    j * CELL_SIZE,
+                    i * CELL_SIZE,
+                    CELL_SIZE,
+                    CELL_SIZE
+                };
                 Font_Color.r = 0;
                 Font_Color.g = 255;
                 Font_Color.b = 255;
+                SDL_SetRenderDrawColor(renderer, grid_cursor_ghost_color.r,
+                                   grid_cursor_ghost_color.g,
+                                   grid_cursor_ghost_color.b,
+                                   grid_cursor_ghost_color.a);
+                SDL_RenderFillRect(renderer, &grid_cursor_ghost);
             }
             else {
                 Font_Color.r = 255;
@@ -134,8 +138,8 @@ void display_board() {
             texture = SDL_CreateTextureFromSurface(renderer, surface);
 
             SDL_Rect Message_rect = {
-                .x = j*CELL_SIZE + 36,
-                .y = i*CELL_SIZE + 30,
+                .x = j * CELL_SIZE + 36,
+                .y = i * CELL_SIZE + 30,
                 .w = 42 + game[i][j] / 16,
                 .h = 72,
             };
