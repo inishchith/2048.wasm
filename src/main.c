@@ -33,7 +33,7 @@ int INIT_DISPLAY = true;
 // SDL_Color grid_background = {119, 110, 101, 0};
 // SDL_Color grid_background = {22, 22, 22, 255};
 SDL_Color grid_background = {30, 100, 119, 255};
-SDL_Color grid_line_color = {44, 44, 44, 255};
+SDL_Color grid_line_color = {15, 50, 60, 255};
 SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
 SDL_Color grid_cursor_color = {255, 255, 255, 255};
 
@@ -60,7 +60,7 @@ int main() {
     if (!init()) return 1;
 
     begin();
-    font = TTF_OpenFont("OpenSans-Bold.ttf", 24);
+    font = TTF_OpenFont("Nunito-ExtraBold.ttf", 108);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(mainloop, 0, 1);
@@ -112,6 +112,8 @@ void display_board() {
 
     for(i = 0; i < GRID_SIZE; ++i) {
         for(j = 0; j < GRID_SIZE; ++j) {
+            if(!game[i][j]) continue;
+
             char *snum = calloc(6, sizeof(char));
             sprintf(snum, "%d", game[i][j]);
 
@@ -132,10 +134,10 @@ void display_board() {
             texture = SDL_CreateTextureFromSurface(renderer, surface);
 
             SDL_Rect Message_rect = {
-                .x = j*CELL_SIZE + 30,
+                .x = j*CELL_SIZE + 36,
                 .y = i*CELL_SIZE + 30,
-                .w = CELL_SIZE / 2,
-                .h = CELL_SIZE / 2,
+                .w = 42 + game[i][j] / 16,
+                .h = 72,
             };
 
             SDL_RenderCopy(renderer, texture, NULL, &Message_rect);
@@ -319,10 +321,16 @@ bool loop() {
 
     for (int x = 0; x < window_side; x += CELL_SIZE) {
         SDL_RenderDrawLine(renderer, x, 0, x, window_side);
+        SDL_RenderDrawLine(renderer, x + 1, 0, x + 1, window_side);
+        SDL_RenderDrawLine(renderer, x + 2, 0, x + 2, window_side);
+        SDL_RenderDrawLine(renderer, x + 3, 0, x + 3, window_side);
     }
 
     for (int y = 0; y < window_side; y += CELL_SIZE) {
         SDL_RenderDrawLine(renderer, 0, y, window_side, y);
+        SDL_RenderDrawLine(renderer, 0, y + 1, window_side, y + 1);
+        SDL_RenderDrawLine(renderer, 0, y + 2, window_side, y + 2);
+        SDL_RenderDrawLine(renderer, 0, y + 3, window_side, y + 3);
     }
 
     display_board();
