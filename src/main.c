@@ -185,58 +185,40 @@ void add_value() {
 
 void fall() {
     int i, j, k, temp;
-    int (*g2)[GRID_SIZE] = calloc(GRID_SIZE, GRID_SIZE * sizeof(int));
 
-    // migrate zeros from front
+    // migrate zeros to backward
     for (i = 0; i < GRID_SIZE; i++) {
-        for (j = GRID_SIZE-1; j >=0; j--){
-            for (k = j-1; k >=0; k--){
-                if (game[j][i] == 0 && game[k][i] != 0) {
-                    temp = game[k][i];
-                    game[k][i] = game[j][i];
-                    game[j][i] = temp;
-                    break;
-                }
+        j = GRID_SIZE - 1;
+        k = GRID_SIZE - 2;
+        while (k > -1) {
+            if (game[j][i] == 0 && game[k][i] != 0) {
+                temp = game[k][i];
+                game[k][i] = game[j][i];
+                game[j][i] = temp;
+                j--;
             }
+            else if (game[j][i]) {
+                j--;
+            }
+            k--;
         }
     }
 
+    // resolve
     for (i = GRID_SIZE - 2; i >= 0; i--) {
         for (j = 0; j < GRID_SIZE; j++) {
-            if (i==GRID_SIZE-2)
-                g2[i+1][j] = game[i+1][j];
-
             if (game[i][j] == game[i+1][j]) {
-                g2[i+1][j] = game[i][j] * 2;
+                game[i+1][j] = game[i][j] * 2;
                 game[i][j] = 0;
             }
             else if (game[i+1][j] == 0) {
-                g2[i+1][j] = game[i][j];
+                game[i+1][j] = game[i][j];
                 game[i][j] = 0;
             } else {
-                g2[i][j] = game[i][j];
+                game[i][j] = game[i][j];
             }
         }
     }
-
-    memcpy(game, g2, sizeof(int) * GRID_SIZE * GRID_SIZE);
-    free(g2);
-
-    // migrate zeros from front
-    for (i = 0; i < GRID_SIZE; i++) {
-        for (j = GRID_SIZE-1; j >=0; j--){
-            for (k = j-1; k >=0; k--){
-                if (game[j][i] == 0 && game[k][i] != 0) {
-                    temp = game[k][i];
-                    game[k][i] = game[j][i];
-                    game[j][i] = temp;
-                    break;
-                }
-            }
-        }
-    }
-
-    add_value();
 }
 
 void upside_down() {
@@ -311,6 +293,7 @@ bool loop() {
                         begin();
                         break;
                 }
+                add_value();
                 break;
             case SDL_QUIT:
                 return false;
