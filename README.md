@@ -12,9 +12,12 @@
 - Compile C code
 ```sh
 $ cd src
-$ gcc 2048.c -o play -I ./include -L ./lib -l SDL2-2.0.0 -lSDL2 -lSDL2_ttf
+$ make game
 $ ./play
 ```
+
+**Note:** Make sure you add the appropriate path to SDL2 headers and libs under Makefile.
+
 
 - Compile C code to WASM via emscripten
 ```sh
