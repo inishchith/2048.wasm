@@ -157,6 +157,7 @@ int random_cord() {
     return rand() % GRID_SIZE;
 }
 
+// https://xkcd.com/221/
 int random_value() {
     return 2;
 }
