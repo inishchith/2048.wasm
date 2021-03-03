@@ -180,14 +180,16 @@ void add_value() {
         }
         c--;
     }
-    exit(0);
+
+    // lol
+    begin();
 }
 
 void fall() {
     int i, j, k, temp;
 
     // migrate zeros to backward
-    for (i = 0; i < GRID_SIZE; i++) {
+    for (i = 0; i < GRID_SIZE; ++i) {
         j = GRID_SIZE - 1;
         k = GRID_SIZE - 2;
         while (k > -1) {
@@ -205,8 +207,8 @@ void fall() {
     }
 
     // resolve
-    for (i = GRID_SIZE - 2; i >= 0; i--) {
-        for (j = 0; j < GRID_SIZE; j++) {
+    for (i = GRID_SIZE - 2; i >= 0; --i) {
+        for (j = 0; j < GRID_SIZE; ++j) {
             if (game[i][j] == game[i+1][j]) {
                 game[i+1][j] = game[i][j] * 2;
                 game[i][j] = 0;
@@ -223,8 +225,8 @@ void fall() {
 
 void upside_down() {
     int temp;
-    for(int i = 0; i < GRID_SIZE / 2; i++) {
-        for(int j = 0; j < GRID_SIZE; j++) {
+    for(int i = 0; i < GRID_SIZE / 2; ++i) {
+        for(int j = 0; j < GRID_SIZE; ++j) {
             temp = game[i][j];
             game[i][j] = game[GRID_SIZE-i-1][j];
             game[GRID_SIZE-i-1][j] = temp;
@@ -236,8 +238,8 @@ void rotate_right() {
     int temp;
     int (*g2)[GRID_SIZE] = calloc(GRID_SIZE, GRID_SIZE * sizeof(int));
 
-    for(int i = 0; i < GRID_SIZE; i++) {
-        for(int j = 0; j < GRID_SIZE; j++) {
+    for(int i = 0; i < GRID_SIZE; ++i) {
+        for(int j = 0; j < GRID_SIZE; ++j) {
             g2[GRID_SIZE-1-j][i] = game[i][j];
         }
     }
@@ -249,8 +251,8 @@ void rotate_right() {
 void rotate_left() {
     int (*g2)[GRID_SIZE] = calloc(GRID_SIZE, GRID_SIZE * sizeof(int));
 
-    for(int i = 0; i < GRID_SIZE; i++) { 
-        for(int j = 0; j < GRID_SIZE; j++) { 
+    for(int i = 0; i < GRID_SIZE; ++i) {
+        for(int j = 0; j < GRID_SIZE; ++j) {
             g2[i][j] = game[GRID_SIZE-1-j][i];
         }
     }
@@ -306,6 +308,7 @@ bool loop() {
 
     SDL_SetRenderDrawColor(renderer, grid_line_color.r, grid_line_color.g, grid_line_color.b, grid_line_color.a);
 
+    // I know this is bad - but how otherwise
     for (int x = 0; x < window_side; x += CELL_SIZE) {
         SDL_RenderDrawLine(renderer, x, 0, x, window_side);
         SDL_RenderDrawLine(renderer, x + 1, 0, x + 1, window_side);

@@ -11,9 +11,9 @@
 
     :root {
         --primary-background: #9cc2d2;
-        --primary-text: #eff2f5;
+        --primary-text: #354b59;
         --secondary-text: #b0b3b5;
-        --border-color: #4a4d4f;
+        --border-color: #354b59;
         --highlight-color: #028b75;
     }
 
@@ -23,7 +23,7 @@
         background-color: var(--primary-background);
         font-size: 20px;
         margin: 0px;
-        color:#354b59;
+        color: var(--primary-text);
         font-weight: 600;
         font-family: 'Nunito', sans-serif;
     }
@@ -40,8 +40,17 @@
         transform: translate(-50%, -50%);
         text-align: center;
     }
+
+    #small {
+        font-size: 14px;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
     canvas {
-        border: 6px solid #354b59;
+        border: 6px solid var(--border-color);
     }
 
 </style>
@@ -56,8 +65,14 @@
             <kbd> ᐅ </kbd>
             <kbd> ᐃ </kbd>
             <kbd> ᐁ </kbd> ) to slide the tiles.
+            <br>
+            press <kbd> n </kbd> to play over.
         </p>
-        <p>This game was written purely in C (with SDL2 graphics library) and compiled to WebAssembly using emscripten</p>
+        <p id="small">
+            This game was written purely in C (with SDL2 graphics library) and compiled to WebAssembly using emscripten.
+            <br><br>
+            <a href="https://github.com/inishchith/2048.wasm" target="_blank">VIEW SOURCE</a>
+        </p>
     </div>
 
     <script type="text/javascript">
@@ -67,5 +82,8 @@
     </script>
     <script async type="text/javascript" src="2048.js"></script>
 
+    <!-- Cloudflare Web Analytics -->
+	<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "fe06ef1c00ed429db8eab1a7de7d2366"}'></script>
+	<!-- End Cloudflare Web Analytics -->
 </body>
 </html>
