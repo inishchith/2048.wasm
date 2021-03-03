@@ -309,19 +309,15 @@ bool loop() {
 
     SDL_SetRenderDrawColor(renderer, grid_line_color.r, grid_line_color.g, grid_line_color.b, grid_line_color.a);
 
-    // I know this is bad - but how otherwise
+    // better than before - still not satisfied.
     for (int x = 0; x < window_side; x += CELL_SIZE) {
-        SDL_RenderDrawLine(renderer, x, 0, x, window_side);
-        SDL_RenderDrawLine(renderer, x + 1, 0, x + 1, window_side);
-        SDL_RenderDrawLine(renderer, x + 2, 0, x + 2, window_side);
-        SDL_RenderDrawLine(renderer, x + 3, 0, x + 3, window_side);
+        for(int i = 0; i < 4; i++)
+            SDL_RenderDrawLine(renderer, x + i, 0, x + i, window_side);
     }
 
     for (int y = 0; y < window_side; y += CELL_SIZE) {
-        SDL_RenderDrawLine(renderer, 0, y, window_side, y);
-        SDL_RenderDrawLine(renderer, 0, y + 1, window_side, y + 1);
-        SDL_RenderDrawLine(renderer, 0, y + 2, window_side, y + 2);
-        SDL_RenderDrawLine(renderer, 0, y + 3, window_side, y + 3);
+        for(int i = 0; i < 4; i++)
+            SDL_RenderDrawLine(renderer, 0, y + i, window_side, y + i);
     }
 
     display_board();
