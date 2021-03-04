@@ -31,4 +31,4 @@ $ emcc -s WASM=1 -s USE_SDL=2 -s USE_SDL_TTF=2 --preload-file src/Nunito-ExtraBo
 
 ---
 
-<center>Copyright &copy; Nishchith Shetty 2021</center>
+Copyright &copy; Nishchith Shetty 2021
